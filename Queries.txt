@@ -117,16 +117,19 @@ VALUES
 (9, 9, 500, 'Cash', 'Refunded'),
 (10, 10, 600, 'UPI', 'Pending')
 
+
 #1. Display each patient's name, appointment date, diagnosis, and the name of the doctor assigned to them.
 
 select p.patient_name, a.appoinment_date,a.diagnosis,d.doctor_name from appoinments a
 inner join patient p on p.patient_id=a.patient_id
 inner join doctor d on d.doctor_id=a.doctor_id
 
+
 #2. Display each doctor's name, specialization, and department name, sorted alphabetically by department.
 
 select d.doctor_name, d.specialization,e.department_name from doctor d
 left join departments e on e.department_id=d.department_id order by e.department_name 
+
 
 #3. Find all patients who have appointments with doctors from the Cardiology department. Display the patient name and doctor name.
 
@@ -135,11 +138,13 @@ inner join appoinments a on p.patient_id=a.patient_id
 inner join doctor d on a.doctor_id=d.doctor_id
 inner join departments e on e.department_id=d.department_id where e.department_name="Cardiology"
 
+
 #4. Display patient names, appointment IDs, and payment amounts for appointments whose payment status is 'Paid'.
 
 select p.patient_name, a.appoinment_id, y.amount from patient p
 inner join appoinments a on a.patient_id=p.patient_id
 inner join payment y on a.appoinment_id=y.appoinment_id where y.payment_status="Paid"
+
 
 #5. List all patients along with their appointment details, including patients who have never booked an appointment.
 
@@ -147,15 +152,18 @@ select a.appoinment_id, p.patient_name, d.doctor_name, a.diagnosis,a.status from
 left join appoinments a on a.patient_id=p.patient_id
 left join doctor d on a.doctor_id=d.doctor_id
 
+
 #6. Display all departments and their doctors, including departments that currently have no doctors assigned.
 
 select e.department_name, d.doctor_name from departments e
 left join doctor d on e.department_id=d.department_id
 
+
 #7. Find the names of doctors who have not received any appointments.
 
 select d.doctor_name from doctor d
 left join appoinments a on a.doctor_id=d.doctor_id where a.appoinment_id is null
+
 
 #8. Display patient name, doctor name, department name, appointment date, and payment status for completed appointments.
 
@@ -165,11 +173,13 @@ inner join doctor d on d.doctor_id=a.doctor_id
 inner join departments e on e.department_id=d.department_id
 inner join payment y on a.appoinment_id=y.appoinment_id where a.status = "Completed"
 
+
 #9. Find the total payment amount collected for each doctor. Display the doctor's name and total amount, sorted from highest to lowest.
 
 select d.doctor_name,sum(y.amount) as total_payment from doctor d
 inner join appoinments a on a.doctor_id=d.doctor_id
 inner join payment y on y.appoinment_id=a.appoinment_id group by d.doctor_name order by total_payment desc
+
 
 #10. Find patients who have had appointments with more than one distinct doctor. Display each patient's name and the number of distinct doctors visited.
 
@@ -177,3 +187,38 @@ select p.patient_name,count(distinct a.doctor_id) as doctor_count from patient p
 inner join appoinments a on p.patient_id = a.patient_id
 inner join doctor d on d.doctor_id=a.doctor_id group by p.patient_name having doctor_count > 1
 
+
+#11. Find the total number of appointments handled by each doctor. Display the doctor's name and appointment count, sorted from highest to lowest.
+
+select d.doctor_name, count(a.appoinment_id) as total_appointments from doctor d
+inner join appoinments a on d.doctor_id = a.doctor_id
+group by d.doctor_name order by total_appointments desc
+
+
+#12. Display the names of patients who have pending appointments along with their appointment dates and assigned doctor's names.
+
+select p.patient_name, a.appoinment_date, d.doctor_name, a.status from patient p
+inner join appoinments a on p.patient_id = a.patient_id
+inner join doctor d on a.doctor_id = d.doctor_id where a.status = 'Pending'
+
+
+#13. Find the total amount received through each payment method. Display the payment method and total amount collected, sorted from highest to lowest.
+
+select payment_method, sum(amount) as total_amount from payment
+where payment_status = 'Paid' group by payment_method order by total_amount desc
+
+
+#14. Display the departments that have more than one doctor. Show the department name and the number of doctors in each department.
+
+select e.department_name, count(d.doctor_id) as total_doctors from departments e
+inner join doctor d on e.department_id = d.department_id
+group by e.department_name having count(d.doctor_id) > 1
+
+
+#15. Find the total number of appointments and total payment amount for each patient. Display only patients whose total payment amount is greater than 2000.
+
+select p.patient_name, count(a.appoinment_id) as total_appointments, sum(y.amount) as total_payment
+from patient p inner join appoinments a on p.patient_id = a.patient_id
+inner join payment y on a.appoinment_id = y.appoinment_id
+group by p.patient_id, p.patient_name having sum(y.amount) > 2000
+order by total_payment desc
