@@ -1,1 +1,179 @@
+# A MySQL-based Hospital Management System to manage patients, doctors, departments, appointments, and payments. Demonstrates relational database design, primary and foreign keys, JOINs, aggregate functions, filtering, sorting, and report generation using SQL.
+
+create table departments(
+department_id int primary key,
+department_name varchar(50),
+location varchar(50)
+)
+
+create table doctor(
+doctor_id int primary key,
+doctor_name varchar(50),
+specialization varchar(50),
+department_id int,
+salary int,
+foreign key(department_id) references departments(department_id)
+)
+
+create table patient(
+patient_id int primary key,
+patient_name varchar(100),
+age int,
+gender varchar(100),
+city varchar(100),
+phone varchar(15)
+)
+
+create table appoinments(
+appoinment_id int primary key,
+patient_id int,
+doctor_id int,
+appoinment_date date,
+diagnosis varchar(100),
+status varchar(100),
+foreign key(patient_id) references patient(patient_id),
+foreign key(doctor_id) references doctor(doctor_id)
+) 
+
+create table payment(
+payment_id int primary key,
+appoinment_id int,
+amount int,
+payment_method varchar(100),
+payment_status varchar(100),
+foreign key(appoinment_id) references appoinments(appoinment_id)
+)
+
+INSERT INTO departments
+(department_id, department_name, location)
+VALUES
+(1, 'Cardiology', 'Block A'),
+(2, 'Neurology', 'Block B'),
+(3, 'Orthopedics', 'Block A'),
+(4, 'Pediatrics', 'Block C'),
+(5, 'Dermatology', 'Block B'),
+(6, 'General Medicine', 'Block A'),
+(7, 'ENT', 'Block C'),
+(8, 'Oncology', 'Block D'),
+(9, 'Radiology', 'Block D'),
+(10, 'Emergency', 'Ground Floor')
+
+INSERT INTO doctor
+(doctor_id, doctor_name, specialization,
+ department_id, salary)
+VALUES
+(1, 'Arun Kumar', 'Heart Specialist', 1, 90000),
+(2, 'Priya Sharma', 'Neurologist', 2, 95000),
+(3, 'Rahul Raj', 'Bone Specialist', 3, 80000),
+(4, 'Divya S', 'Child Specialist', 4, 75000),
+(5, 'Karthik M', 'Skin Specialist', 5, 70000),
+(6, 'Sneha R', 'Physician', 6, 85000),
+(7, 'Vijay Kumar', 'ENT Specialist', 7, 78000),
+(8, 'Ananya P', 'Oncologist', 8, 100000),
+(9, 'Sanjay T', 'Radiologist', 9, 88000),
+(10, 'Meena K', 'Emergency Physician', 10, 92000)
+
+INSERT INTO patient
+(patient_id, patient_name, age, gender, city, phone)
+VALUES
+(1, 'Akash', 25, 'Male', 'Madurai', '9940702544'),
+(2, 'Ajay', 34, 'Male', 'Tirunelveli', '9940702234'),
+(3, 'Joe', 45, 'Male', 'Kanyakumari', '9925702544'),
+(4, 'Selva', 29, 'Male', 'Pondicherry', '9780702544'),
+(5, 'Azhmeer', 52, 'Male', 'Thiruvarur', '9940701144'),
+(6, 'Kavin', 12, 'Male', 'Chennai', '9876543210'),
+(7, 'Suresh', 61, 'Male', 'Coimbatore', '9876543211'),
+(8, 'Mohan', 40, 'Male', 'Trichy', '9876543212'),
+(9, 'Bala', 31, 'Male', 'Salem', '9876543213'),
+(10, 'Praveen', 48, 'Male', 'Erode', '9876543214')
+
+INSERT INTO appoinments
+(appoinment_id, patient_id, doctor_id,
+ appoinment_date, diagnosis, status)
+VALUES
+(1, 1, 1, '2026-10-01', 'Chest Pain', 'Completed'),
+(2, 2, 2, '2026-10-02', 'Migraine', 'Completed'),
+(3, 3, 3, '2026-10-03', 'Fracture', 'Completed'),
+(4, 4, 4, '2026-10-04', 'Fever', 'Completed'),
+(5, 5, 5, '2026-10-05', 'Skin Allergy', 'Pending'),
+(6, 6, 4, '2026-10-06', 'Cold', 'Completed'),
+(7, 7, 6, '2026-10-07', 'Diabetes Checkup', 'Pending'),
+(8, 8, 1, '2026-10-08', 'Blood Pressure', 'Completed'),
+(9, 9, 7, '2026-10-09', 'Ear Infection', 'Cancelled'),
+(10, 1, 6, '2026-10-10', 'General Checkup', 'Pending')
+
+INSERT INTO payment
+(payment_id, appoinment_id, amount,
+ payment_method, payment_status)
+VALUES
+(1, 1, 1500, 'UPI', 'Paid'),
+(2, 2, 2000, 'Card', 'Paid'),
+(3, 3, 3000, 'Cash', 'Paid'),
+(4, 4, 800, 'UPI', 'Paid'),
+(5, 5, 1200, 'Card', 'Pending'),
+(6, 6, 700, 'Cash', 'Paid'),
+(7, 7, 1000, 'UPI', 'Pending'),
+(8, 8, 1800, 'Card', 'Paid'),
+(9, 9, 500, 'Cash', 'Refunded'),
+(10, 10, 600, 'UPI', 'Pending')
+
+#1. Display each patient's name, appointment date, diagnosis, and the name of the doctor assigned to them.
+
+select p.patient_name, a.appoinment_date,a.diagnosis,d.doctor_name from appoinments a
+inner join patient p on p.patient_id=a.patient_id
+inner join doctor d on d.doctor_id=a.doctor_id
+
+#2. Display each doctor's name, specialization, and department name, sorted alphabetically by department.
+
+select d.doctor_name, d.specialization,e.department_name from doctor d
+left join departments e on e.department_id=d.department_id order by e.department_name 
+
+#3. Find all patients who have appointments with doctors from the Cardiology department. Display the patient name and doctor name.
+
+select p.patient_name, d.doctor_name from patient p
+inner join appoinments a on p.patient_id=a.patient_id
+inner join doctor d on a.doctor_id=d.doctor_id
+inner join departments e on e.department_id=d.department_id where e.department_name="Cardiology"
+
+#4. Display patient names, appointment IDs, and payment amounts for appointments whose payment status is 'Paid'.
+
+select p.patient_name, a.appoinment_id, y.amount from patient p
+inner join appoinments a on a.patient_id=p.patient_id
+inner join payment y on a.appoinment_id=y.appoinment_id where y.payment_status="Paid"
+
+#5. List all patients along with their appointment details, including patients who have never booked an appointment.
+
+select a.appoinment_id, p.patient_name, d.doctor_name, a.diagnosis,a.status from patient p
+left join appoinments a on a.patient_id=p.patient_id
+left join doctor d on a.doctor_id=d.doctor_id
+
+#6. Display all departments and their doctors, including departments that currently have no doctors assigned.
+
+select e.department_name, d.doctor_name from departments e
+left join doctor d on e.department_id=d.department_id
+
+#7. Find the names of doctors who have not received any appointments.
+
+select d.doctor_name from doctor d
+left join appoinments a on a.doctor_id=d.doctor_id where a.appoinment_id is null
+
+#8. Display patient name, doctor name, department name, appointment date, and payment status for completed appointments.
+
+select p.patient_name,d.doctor_name,e.department_name,a.appoinment_date,y.payment_status from patient p
+inner join appoinments a on p.patient_id=a.appoinment_id
+inner join doctor d on d.doctor_id=a.doctor_id
+inner join departments e on e.department_id=d.department_id
+inner join payment y on a.appoinment_id=y.appoinment_id where a.status = "Completed"
+
+#9. Find the total payment amount collected for each doctor. Display the doctor's name and total amount, sorted from highest to lowest.
+
+select d.doctor_name,sum(y.amount) as total_payment from doctor d
+inner join appoinments a on a.doctor_id=d.doctor_id
+inner join payment y on y.appoinment_id=a.appoinment_id group by d.doctor_name order by total_payment desc
+
+#10. Find patients who have had appointments with more than one distinct doctor. Display each patient's name and the number of distinct doctors visited.
+
+select p.patient_name,count(distinct a.doctor_id) as doctor_count from patient p
+inner join appoinments a on p.patient_id = a.patient_id
+inner join doctor d on d.doctor_id=a.doctor_id group by p.patient_name having doctor_count > 1
 
